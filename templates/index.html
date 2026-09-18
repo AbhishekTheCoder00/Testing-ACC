@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autodesk Forma Connector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <h1>ACC Connector</h1>
+  </div>
+  <div class="topbar-sub">Autodesk Forma &rarr; Databricks</div>
+  <div class="topbar-actions"><a href="/reset" onclick="return confirmStartOver(event)" title="Clear your setup and sign in again">Start over</a></div>
+</div>
+
+<!-- ── Main layout ── -->
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Setup Steps</div>
+
+    <div class="nav-item active" id="nav-1" onclick="navTo(1)">
+      <div class="nav-circle" id="nc-1">1</div>
+      <div class="nav-text">
+        <div class="nav-title">Connect ACC</div>
+        <div class="nav-sub">Autodesk OAuth</div>
+      </div>
+    </div>
+
+    <div class="nav-item locked" id="nav-2" onclick="navTo(2)">
+      <div class="nav-circle" id="nc-2">2</div>
+      <div class="nav-text">
+        <div class="nav-title">Connect Databricks</div>
+        <div class="nav-sub">Bootstrap workspace</div>
+      </div>
+      <span class="lock-icon" id="lock-2">&#128274;</span>
+    </div>
+
+    <div class="nav-item locked" id="nav-3" onclick="navTo(3)">
+      <div class="nav-circle" id="nc-3">3</div>
+      <div class="nav-text">
+        <div class="nav-title">Sync Data</div>
+        <div class="nav-sub">All modules via Data Connector</div>
+      </div>
+      <span class="lock-icon" id="lock-3">&#128274;</span>
+    </div>
+
+    <div class="nav-item locked" id="nav-4" onclick="navTo(4)">
+      <div class="nav-circle" id="nc-4">4</div>
+      <div class="nav-text">
+        <div class="nav-title">Auto CDC</div>
+        <div class="nav-sub">Daily incremental sync</div>
+      </div>
+      <span class="lock-icon" id="lock-4">&#128274;</span>
+    </div>
+
+    <div class="nav-item locked" id="nav-5" onclick="navTo(5)">
+      <div class="nav-circle" id="nc-5">5</div>
+      <div class="nav-text">
+        <div class="nav-title">Dashboard</div>
+        <div class="nav-sub">Sync history &amp; analytics</div>
+      </div>
+      <span class="lock-icon" id="lock-5">&#128274;</span>
+    </div>
+
+  </nav>
+
+  <!-- ── Content panels ── -->
+  <main class="content">
+
+    <!-- ===== PANEL 1a: Big CTA (not yet authenticated) ===== -->
+    <div class="panel active" id="panel-1a">
+      <div class="landing-wrap">
+        <div class="landing-icon">&#128279;</div>
+        <div class="landing-title">Connect to Autodesk ACC</div>
+        <div class="landing-desc">
+          Sign in with your Autodesk account to grant access to
+          your ACC project for Data Connector bulk export.
+        </div>
+        <button class="btn-cta" onclick="connectACC()">
+          &#9654; &nbsp; Sign in with Autodesk
+        </button>
+        <div id="acc-cta-msg"></div>
+      </div>
+    </div>
+
+    <!-- ===== PANEL 1b: Project selection (authenticated, project not yet saved) ===== -->
+    <div class="panel" id="panel-1b">
+      <div class="panel-title">Select Your ACC Project</div>
+      <div class="panel-sub">Choose the hub and project you want to sync data from.</div>
+
+      <div class="status-pill pill-pending" id="acc-auth-pill">
+        &#9679; Authenticated &mdash; select a hub and project to continue
+      </div>
+
+      <div class="field">
+        <label>Hub</label>
+        <select id="hub-select" onchange="loadProjects()">
+          <option value="">-- Loading hubs... --</option>
+        </select>
+      </div>
+
+      <div class="msg msg-info acc-hub-help" id="acc-hub-help">
+        <details class="acc-help-details">
+          <summary class="acc-help-summary"><strong>Don&apos;t see your hub?</strong> <span class="acc-help-summary-hint">Click for setup steps</span></summary>
+          <div class="acc-help-body">
+            <p>If the ACC hub you need for Databricks sync is not in the list above, ask your
+            <strong>ACC Account Admin</strong> to register this connector as a Custom Integration.</p>
+            <ol class="acc-help-steps">
+              <li>In ACC, open <strong>Account Admin &rarr; Settings &rarr; Custom Integrations</strong>.</li>
+              <li>Add the connector Client ID from the connector documentation (not your own APS app ID).</li>
+              <li>Follow the
+                <a href="https://help.autodesk.com/view/DOCS/ENU/?guid=Custom_Integrations" target="_blank" rel="noopener">Autodesk Custom Integrations guide</a>
+                for where to enter it.</li>
+            </ol>
+            {% if connector_docs_url %}
+            <p>See the <a href="{{ connector_docs_url }}" target="_blank" rel="noopener">connector documentation</a> for the Client ID and full beta setup details.</p>
+            {% else %}
+            <p>See the connector release documentation provided with this beta release for the Client ID and full setup details.</p>
+            {% endif %}
+            <div class="acc-help-actions">
+              <button type="button" class="btn btn-outline acc-help-reload" onclick="loadHubs()">&#8635; Reload hubs</button>
+              <a class="acc-help-link" href="https://help.autodesk.com/view/DOCS/ENU/?guid=Custom_Integrations" target="_blank" rel="noopener">Autodesk guide &#8599;</a>
+              {% if connector_docs_url %}
+              <a class="acc-help-link" href="{{ connector_docs_url }}" target="_blank" rel="noopener">Connector docs &#8599;</a>
+              {% endif %}
+            </div>
+            <p class="acc-help-note">Allow a few minutes after saving, then click <strong>Reload hubs</strong> or refresh this page.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="field">
+        <label>Project</label>
+        <select id="project-select" onchange="loadFolders()" disabled>
+          <option value="">-- Select Hub first --</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Folder <span style="font-weight:400;color:#aaa">(optional)</span></label>
+        <select id="folder-select" disabled>
+          <option value="">-- Select Folder --</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="saveACCConfig()">Save ACC Configuration</button>
+      </div>
+      <div id="acc-config-msg"></div>
+    </div>
+
+    <!-- ===== PANEL 1c: ACC done (review) ===== -->
+    <div class="panel" id="panel-1c">
+      <div class="panel-title">Autodesk ACC</div>
+      <div class="panel-sub">Connection and project selection complete.</div>
+      <div class="status-pill pill-connected" id="acc-done-pill">
+        &#10003; Connected
+      </div>
+      <div class="panel-note" style="font-size:13px;color:#666;margin:0 0 8px;">
+        &#128190;&nbsp; Previously selected configuration.
+      </div>
+      <div id="acc-done-detail" style="font-size:13px;color:#555;line-height:1.8;"></div>
+      <hr class="divider">
+      <div class="btn-row" id="acc-review-buttons">
+        <button class="btn btn-outline" onclick="navTo(2)">Go to Step 2 &rarr;</button>
+        <button class="btn btn-outline" onclick="changeProject()">Change Project</button>
+      </div>
+    </div>
+
+    <!-- ===== PANEL 2: Databricks (locked or active) ===== -->
+    <div class="panel" id="panel-2">
+      <div id="panel-2-locked" class="locked-notice" style="display:none">
+        <div class="lock-big">&#128274;</div>
+        <p>Complete <strong>Step 1 — Connect ACC</strong> and save your project configuration first.</p>
+        <button class="btn btn-outline" onclick="navTo(1)">Go to Step 1</button>
+      </div>
+
+      <div id="panel-2-form">
+        <div class="panel-title">Connect Databricks</div>
+        <div class="panel-sub">Create a Databricks OAuth app once in your account console, then paste the credentials below.</div>
+
+        <div class="status-pill pill-disconnected" id="dbx-status-pill">
+          &#9679; Not connected
+        </div>
+
+        <div id="dbx-login-wrap">
+          <div id="dbx-creds-saved" class="creds-saved" style="display:none">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#333">Databricks credentials saved</div>
+                <div id="dbx-saved-workspace" style="font-size:12px;color:#777;margin-top:2px;font-family:monospace"></div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-outline" onclick="reauthorizeDatabricks()" id="btn-dbx-reauthorize">Authorize again</button>
+                <button class="btn btn-outline" onclick="showDbxCredsForm(true)">Change credentials</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="dbx-creds-form">
+            <!-- Fivetran-style setup guide -->
+            <div class="setup-guide">
+              <div class="setup-guide-header">
+                <span class="setup-guide-icon">&#128270;</span>
+                <span>Databricks App Setup Guide</span>
+              </div>
+              <div class="setup-guide-body">
+                <div class="setup-guide-callback">
+                  <div class="setup-guide-callback-label">Authorize callback URL &mdash; paste this into Databricks as the app's Redirect URL</div>
+                  <div class="setup-guide-callback-url" id="dbx-callback-url">
+                    <span id="dbx-callback-url-text">https://formabricks-stg.cctech.co.in/databricks/callback</span>
+                    <button class="btn btn-outline btn-copy" onclick="copyDbxCallbackUrl()">Copy</button>
+                  </div>
+                </div>
+                <ol class="setup-guide-steps">
+                  <li>Go to your Databricks <strong>account console</strong>.</li>
+                  <li>Navigate to <strong>Settings &rarr; App connection</strong>.</li>
+                  <li>Click <strong>Add</strong>, give the app a <strong>name</strong>, and set the <strong>Redirect URLs</strong> to the authorize callback URL above.</li>
+                  <li>Under <strong>Access scopes</strong>, select <strong>all API</strong> and <strong>offline access</strong>.</li>
+                  <li>Keep <strong>Generate a client secret</strong> turned on.</li>
+                  <li>Click <strong>Add</strong>, then paste the generated <strong>Client ID</strong> and <strong>Client Secret</strong> into this form along with your workspace URL.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:16px">
+              <label>Databricks Client ID</label>
+              <input type="text" id="dbx-client-id-input" placeholder="Databricks OAuth app client id"
+                     style="font-family:monospace;font-size:13px">
+            </div>
+            <div class="field" style="margin-top:12px">
+              <label>Databricks Client Secret</label>
+              <input type="password" id="dbx-client-secret-input" placeholder="Databricks OAuth app client secret"
+                     style="font-family:monospace;font-size:13px">
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:16px">
+            <label>Databricks Workspace URL</label>
+            <input type="text" id="workspace-url-input"
+                   placeholder="https://dbc-xxxx.cloud.databricks.com  or  https://<your-workspace-host>"
+                   oninput="onWorkspaceUrlInput()" style="font-family:monospace;font-size:13px">
+            <div class="field-hint">Example: <code>*.cloud.databricks.com</code> (other valid Databricks hosts are also allowed)</div>
+          </div>
+
+          <div id="cloud-badge" style="display:none;margin:10px 0 16px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;display:inline-block"></div>
+
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-primary btn-authorize" onclick="authorizeDatabricks()" id="btn-dbx-authorize">
+              &#128274;&nbsp; Authorize &amp; Sign In
+            </button>
+          </div>
+          <div id="dbx-auth-status" class="dbx-auth-status" style="display:none"></div>
+        </div>
+        <div id="dbx-msg"></div>
+
+        <div id="dbx-post-login" style="display:none;margin-top:16px">
+          <div class="dbx-workspace-card" id="dbx-workspace-card" style="display:none">
+            <div class="dbx-workspace-label">Databricks Workspace</div>
+            <div class="dbx-workspace-row">
+              <span class="dbx-workspace-url" id="dbx-workspace-url"></span>
+              <button type="button" class="btn btn-outline btn-copy-dbx" id="btn-copy-dbx" onclick="copyDbxWorkspaceUrl()">Copy URL</button>
+              <a class="btn btn-outline btn-open-dbx" id="btn-open-dbx" href="#" target="_blank" rel="noopener noreferrer">&#8599;&nbsp; Open workspace</a>
+            </div>
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>Unity Catalog</label>
+            <select id="uc-catalog-select" onchange="onUcCatalogSelected()"
+                    style="width:100%;max-width:520px;font-family:monospace;font-size:13px;padding:8px">
+              <option value="">-- Loading catalogs --</option>
+            </select>
+            <div class="field-hint">
+              Pick an existing catalog from your workspace. The Data Connector bulk
+              path works against any UC catalog the signed-in user can write to.
+            </div>
+            <div id="uc-catalog-detail" style="margin-top:10px;display:none"></div>
+          </div>
+          <div class="btn-row" style="margin-top:12px">
+            <button type="button" class="btn btn-outline" onclick="loadUcCatalogs()" id="btn-refresh-catalogs">&#8635;&nbsp; Refresh list</button>
+            <button type="button" class="btn btn-primary" onclick="startProvisioning()" id="btn-start-provisioning" disabled>&#9654;&nbsp; Run workspace provisioning</button>
+          </div>
+        </div>
+
+        <div id="bootstrap-progress" class="bs-list" style="display:none">
+          <hr class="divider">
+          <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Bootstrap Progress</div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-1"></div><div id="bs-msg-1">Validate workspace access</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-2"></div><div id="bs-msg-2">Detect compute</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-3"></div><div id="bs-msg-3">Validate Unity Catalog</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-4"></div><div id="bs-msg-4">Verify catalog</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-5"></div><div id="bs-msg-5">Create schemas</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-6"></div><div id="bs-msg-6">Create volume</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-7"></div><div id="bs-msg-7">Validate volume path</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-8"></div><div id="bs-msg-8">Upload notebooks</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-9"></div><div id="bs-msg-9">Create jobs</div></div>
+          <div class="bs-step"><div class="bs-dot" id="bs-dot-10"></div><div id="bs-msg-10">Save configuration</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PANEL 3: Sync (locked or active) ===== -->
+    <div class="panel" id="panel-3">
+      <div id="panel-3-locked" class="locked-notice" style="display:none">
+        <div class="lock-big">&#128274;</div>
+        <p>Complete <strong>Step 2 — Connect Databricks</strong> and bootstrap the workspace first.</p>
+        <button class="btn btn-outline" onclick="navTo(2)">Go to Step 2</button>
+      </div>
+
+      <div id="panel-3-form">
+        <div class="panel-title">Sync Data</div>
+        <div class="panel-sub">Push ACC data into Unity Catalog Bronze SCD1 tables via the Data Connector.</div>
+
+        <div id="sync-bulk-info" class="msg msg-info" style="margin-bottom:16px">
+          &#9432;&nbsp; <strong>Sync Snapshot</strong> exports 16 snapshot-only groups (no cdc* mirror) plus a 10-group cdc* baseline for Pipeline B, then runs Pipeline A and Pipeline B (at most once per 24 hours). Domains with an official cdc* mirror are excluded from the snapshot export.
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-success" id="btn-sync-snapshot" onclick="startSnapshotSync()">&#9654; Sync Snapshot</button>
+          <button class="btn btn-outline" onclick="checkSyncStatus()">Refresh Status</button>
+        </div>
+        <div id="sync-msg"></div>
+        <div id="sync-status-display"></div>
+
+        <hr class="divider">
+        <div class="dash-section-title">Recent runs</div>
+        <div id="sync-recent-runs">
+          <p style="font-size:13px;color:#aaa;">No snapshot runs recorded yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PANEL 4: Auto CDC (locked or active) ===== -->
+    <div class="panel" id="panel-4">
+      <div id="panel-4-locked" class="locked-notice" style="display:none">
+        <div class="lock-big">&#128274;</div>
+        <p>Complete <strong>Step 3 — Sync Data</strong> with a successful Sync Snapshot first.</p>
+        <button class="btn btn-outline" onclick="navTo(3)">Go to Step 3</button>
+      </div>
+
+      <div id="panel-4-form">
+        <div class="panel-title">Auto CDC</div>
+        <p class="panel-sub">
+          Daily incremental CDC (10 official cdc* groups). Snapshot-only domains are not included. Enable Auto CDC to schedule daily runs or trigger Sync CDC manually.
+        </p>
+
+        <div id="auto-cdc-controls" class="auto-sync-card">
+          <div class="auto-sync-info">
+            <div class="proj" id="auto-cdc-project-label">&mdash;</div>
+            <div class="detail" id="auto-cdc-schedule-detail">Auto CDC is off</div>
+          </div>
+          <div class="toggle-wrap">
+            <div class="toggle-switch" id="auto-cdc-toggle" onclick="toggleAutoCdc()"></div>
+            <span class="toggle-label" id="auto-cdc-toggle-label">OFF</span>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn btn-outline" id="btn-auto-sync-cdc" onclick="startCdcSync()" disabled>&#9654; Manual Sync CDC</button>
+          <button class="btn btn-outline" onclick="loadAutoCdcSection()">Refresh</button>
+        </div>
+        <p id="auto-cdc-disabled-hint" style="display:none;font-size:12px;color:#888;margin-top:8px"></p>
+        <div id="auto-cdc-msg"></div>
+        <div id="auto-cdc-status-display"></div>
+
+        <hr class="divider">
+        <div class="dash-section-title">Recent runs</div>
+        <div id="auto-cdc-recent-runs">
+          <p style="font-size:13px;color:#aaa;">No CDC runs recorded yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PANEL 5: Dashboard ===== -->
+    <div class="panel" id="panel-5">
+      <div class="dash-header-row">
+        <div>
+          <div class="panel-title" style="margin-bottom:4px">Dashboard</div>
+          <div class="panel-sub" id="dash-subtitle" style="margin-bottom:0">Pipeline observability for your ACC project</div>
+        </div>
+        <button class="btn btn-outline" onclick="loadDashboard()" style="padding:8px 16px;font-size:13px;flex-shrink:0">&#8635; Refresh</button>
+      </div>
+
+      <div id="dash-intro" class="msg msg-info" style="margin:16px 0;font-size:13px;line-height:1.55">
+        This view summarizes <strong>connector runs</strong> and links to your Databricks landing zone.
+        Run syncs from <strong>Sync Data</strong> and <strong>Auto CDC</strong>; use Databricks SQL for module analytics.
+      </div>
+
+      <div id="dash-auto-cdc-summary" class="dash-auto-cdc-summary"></div>
+
+      <div class="dash-middle-row">
+        <div class="dash-middle-main" id="dash-dbx-context"></div>
+        <div class="chart-wrap dash-middle-chart">
+          <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Export volume trend</div>
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">CSV files landed per sync</div>
+          <canvas id="dash-chart" height="200"></canvas>
+        </div>
+      </div>
+
+      <div id="dash-outcomes-section" class="chart-wrap dash-outcomes-section" style="display:none">
+        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em">Recent outcomes</div>
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:8px">Success vs failed (recent finished runs)</div>
+        <div id="dash-chart-outcomes-wrap" style="max-width:320px;margin:0 auto">
+          <canvas id="dash-chart-outcomes" height="200"></canvas>
+        </div>
+        <p id="dash-chart-outcomes-empty" style="display:none;font-size:13px;color:#94a3b8;padding:24px 8px;text-align:center;">Not enough finished runs yet.</p>
+      </div>
+
+      <div class="dash-advanced">
+        <button type="button" class="dash-advanced-toggle" id="dash-advanced-toggle" onclick="toggleDashAdvanced()">
+          &#9658; Advanced: Data Connector Requests
+        </button>
+        <div id="dash-advanced-body" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:flex-end;margin:10px 0 8px">
+            <button class="btn btn-outline" onclick="loadDCRequests()" style="padding:4px 10px;font-size:11px">&#8635; Refresh list</button>
+          </div>
+          <div id="dc-requests-list" class="dc-requests-scroll">
+            <p style="font-size:13px;color:#aaa;padding:4px 0">Expand to load ACC export jobs&hellip;</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </main>
+</div>
+
+<!-- Start over confirmation -->
+<div id="start-over-modal" class="modal-overlay" hidden aria-hidden="true">
+  <div class="modal-dialog" role="dialog" aria-labelledby="start-over-title" aria-describedby="start-over-desc" aria-modal="true">
+    <div class="modal-icon" aria-hidden="true">&#8634;</div>
+    <h2 id="start-over-title" class="modal-title">Start over from Step 1?</h2>
+    <p id="start-over-desc" class="modal-lead">
+      This clears <strong>your</strong> saved setup in this app so you can connect again from scratch.
+    </p>
+    <div class="modal-section">
+      <div class="modal-section-label">What will be removed</div>
+      <ul class="modal-list">
+        <li>ACC connection and project selection</li>
+        <li>Databricks workspace link and bootstrap settings</li>
+        <li>Sync history, watermarks, and Auto CDC toggle</li>
+      </ul>
+    </div>
+    <div class="modal-note">
+      <strong>Not affected:</strong> other users on this server, and existing pipelines or jobs in your Databricks workspace.
+      You will be signed out and returned to Step 1.
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-outline" id="start-over-cancel">Keep my setup</button>
+      <button type="button" class="btn btn-danger" id="start-over-confirm">Yes, start over</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='sync_button_state.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
