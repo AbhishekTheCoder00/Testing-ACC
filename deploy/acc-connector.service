@@ -1,0 +1,22 @@
+[Unit]
+Description=ACC Connector (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=accconnector
+Group=accconnector
+WorkingDirectory=/opt/acc-connector/app
+EnvironmentFile=/opt/acc-connector/app/.env
+ExecStart=/opt/acc-connector/venv/bin/gunicorn \
+    --bind 127.0.0.1:8000 \
+    --workers 2 \
+    --timeout 600 \
+    --access-logfile - \
+    --error-logfile - \
+    app:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

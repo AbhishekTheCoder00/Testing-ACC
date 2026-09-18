@@ -1,0 +1,1205 @@
+{
+  "admin": {
+    "business_units": [
+      "id"
+    ],
+    "companies": [
+      "id"
+    ],
+    "projects": [
+      "id"
+    ],
+    "roles": [
+      "id"
+    ],
+    "users": [
+      "id"
+    ],
+    "account_services":[
+      "bim360_account_id",
+      "service"
+    ], 
+    "project_user_roles":[
+      "project_id",
+      "user_id",
+      "role_id"
+    ], 
+    "project_users":[
+      "project_id",
+      "user_id"
+    ],
+    "project_products":[
+      "bim360_project_id",
+      "product_key"
+    ],
+    "project_user_products":[
+     "bim360_project_id",
+     "user_id",
+     "product_key"
+    ],
+    "project_roles":[
+      "bim360_project_id",
+      "role_id"
+    ],
+    "project_user_companies":[
+      "project_id",
+      "user_id",
+      "company_oxygen_id"
+    ]
+  },
+  "assets": {
+    "asset_model_sync_records": [
+      "id"
+    ],
+    "asset_custom_attribute_values":[
+      "asset_id",
+      "custom_attribute_id"
+    ],
+    "asset_permissions": [
+      "id"
+    ],
+    "asset_stages": [
+      "id"
+    ],
+    "asset_statuses": [
+      "id"
+    ],
+    "assets": [
+      "id"
+    ],
+    "categories": [
+      "id"
+    ],
+    "category_custom_attribute_assignments": [
+      "id"
+    ],
+    "category_status_set_assignments": [
+      "id"
+    ],
+    "custom_attribute_selection_values": [
+      "id"
+    ],
+    "custom_attributes": [
+      "id"
+    ],
+    "model_sync_containers": [
+      "id"
+    ],
+    "status_sets": [
+      "id"
+    ],
+    "systems": [
+      "id"
+    ],
+    "system_memberships":[
+      "system_id",
+      "member_id"
+    ]
+  },
+  "checklists": {
+    "checklist_assignees": [
+      "id"
+    ],
+    "checklist_attachments": [
+      "id"
+    ],
+    "checklist_item_doc_attachments": [
+      "id"
+    ],
+    "checklist_items": [
+      "id"
+    ],
+    "checklist_items_answers": [
+      "id"
+    ],
+    "checklist_section_assignees": [
+      "id"
+    ],
+    "checklist_sections": [
+      "id"
+    ],
+    "checklist_sections_signatures": [
+      "id"
+    ],
+    "checklist_signatures": [
+      "id"
+    ],
+    "checklists": [
+      "id"
+    ],
+    "template_item_instructions": [
+      "id"
+    ],
+    "template_sections": [
+      "id"
+    ],
+    "template_sections_all": [
+      "id"
+    ],
+    "template_signatures": [
+      "id"
+    ],
+    "template_signatures_all": [
+      "id"
+    ],
+    "templates": [
+      "template_id"
+    ]
+  },
+  "clashes": {
+    "clash_test": [
+      "clash_test_id"
+    ],
+    "clash_group_to_clash_id": [
+      "clash_group_id",
+      "clash_id"
+    ],
+    "assigned_clash_group": [
+      "clash_group_id",
+      "bim360_project_id"
+    ],
+    "closed_clash_group": [
+      "clash_group_id",
+      "bim360_project_id"
+    ]
+  },
+  "iq": {
+    "company_daily_quality_risk_changes": [
+      "id"
+    ],
+    "company_daily_safety_risk_changes": [
+      "id"
+    ],
+    "cost_impact_issues": [
+      "id"
+    ],
+    "design_issues_building_components": [
+      "id"
+    ],
+    "design_issues_root_cause": [
+      "id"
+    ],
+    "inspection_risk_issues": [
+      "id"
+    ],
+    "issues_quality_categories": [
+      "id"
+    ],
+    "issues_quality_risks": [
+      "id"
+    ],
+    "issues_safety_hazard": [
+      "id"
+    ],
+    "issues_safety_observations": [
+      "id"
+    ],
+    "issues_safety_risk": [
+      "id"
+    ],
+    "project_daily_quality_risk_changes": [
+      "id"
+    ],
+    "rfis_building_components": [
+      "id"
+    ],
+    "rfis_disciplines": [
+      "id",
+      "discipline"
+    ],
+    "rfis_high_risk": [
+      "id"
+    ],
+    "rfis_root_cause": [
+      "id"
+    ]
+  },
+  "cost": {
+    "approval_workflows": [
+      "id"
+    ],
+    "change_order_cost_items": [
+      "change_order_id",
+      "cost_item_id"
+    ],
+    "change_order_properties": [
+      "change_order_id",
+      "property_definition_id"
+    ],
+    "budget_code_segment_codes": [
+      "id"
+    ],
+    "budget_code_segments": [
+      "id"
+    ],
+    "budget_payment_items": [
+      "id"
+    ],
+    "budget_payments": [
+      "id"
+    ],
+    "budget_transfers": [
+      "id"
+    ],
+    "budgets": [
+      "id"
+    ],
+    "change_orders": [
+      "id"
+    ],
+    "contracts": [
+      "id"
+    ],
+    "cost_items": [
+      "id"
+    ],
+    "cost_payment_items": [
+      "id"
+    ],
+    "cost_payments": [
+      "id"
+    ],
+    "distribution_item_curves": [
+      "id"
+    ],
+    "distribution_items": [
+      "id"
+    ],
+    "expense_items": [
+      "id"
+    ],
+    "expenses": [
+      "id"
+    ],
+    "main_contract_items": [
+      "id"
+    ],
+    "main_contracts": [
+      "id"
+    ],
+    "payment_references": [
+      "id"
+    ],
+    "permissions": [
+      "id"
+    ],
+    "sub_distribution_items": [
+      "id"
+    ],
+    "transferences": [
+      "id"
+    ]
+  },
+  "dailylogs": {
+    "dailylogs": [
+      "id"
+    ],
+    "labor_items": [
+      "id"
+    ],
+    "labors": [
+      "id"
+    ],
+    "notes": [
+      "id"
+    ],
+    "weather_logs": [
+      "id"
+    ]
+  },
+  "estimates": {
+    "cost_markup_formula_bond_levels": [
+      "id"
+    ],
+    "cost_markup_formula_items": [
+      "id"
+    ],
+    "cost_markup_formula_sections": [
+      "id"
+    ],
+    "cost_markup_formulas": [
+      "id"
+    ],
+    "equipment_cost_calculations": [
+      "id"
+    ],
+    "estimation_instances": [
+      "id"
+    ],
+    "labor_cost_calculations": [
+      "id"
+    ],
+    "material_cost_calculations": [
+      "id"
+    ]
+  },
+  "forms": {
+    "form_attachments": [
+      "id"
+    ],
+    "form_files": [
+      "id"
+    ],
+    "form_sections": [
+      "id",
+      "form_uid"
+    ],
+    "form_templates": [
+      "id"
+    ],
+    "forms": [
+      "id"
+    ],
+    "layout_sections": [
+      "uid"
+    ],
+    "native_form_section_item_attachments": [
+      "id"
+    ],
+    "native_form_values": [
+      "id"
+    ],
+    "native_forms": [
+      "id"
+    ],
+    "weather": [
+      "id"
+    ],
+    "native_form_tabular_values":[
+      "native_form_id",
+      "layout_table_column_id"
+    ]
+  },
+  "issues": {
+    "attachments": [
+      "attachment_id"
+    ],
+    "comments": [
+      "comment_id"
+    ],
+    "custom_attributes_mappings": [
+      "id"
+    ],
+    "issue_subtypes": [
+      "issue_subtype_id"
+    ],
+    "issue_types": [
+      "issue_type_id"
+    ],
+    "issues": [
+      "issue_id"
+    ],
+    "placements": [
+      "placement_id"
+    ],
+    "root_cause_categories": [
+      "root_cause_category_id"
+    ],
+    "root_causes": [
+      "root_cause_id"
+    ]
+  },
+  "issuesbim360": {
+    "attachments": [
+      "attachment_id"
+    ],
+    "comments": [
+      "comment_id"
+    ],
+    "custom_attributes_mappings": [
+      "id"
+    ],
+    "issue_subtypes": [
+      "issue_subtype_id"
+    ],
+    "issue_types": [
+      "issue_type_id"
+    ],
+    "issues": [
+      "issue_id"
+    ],
+    "root_cause_categories": [
+      "root_cause_category_id"
+    ],
+    "root_causes": [
+      "root_cause_id"
+    ]
+  },
+  "locations": {
+    "nodes": [
+      "id"
+    ],
+    "trees": [
+      "id"
+    ]
+  },
+  "markups": {
+    "markup": [
+      "id"
+    ],
+    "placement": [
+      "id"
+    ],
+    "layer": [
+      "bim360_project_id",
+      "uid"
+    ],
+    "link":[
+      "bim360_account_id", 
+      "bim360_project_id", 
+      "uid"
+    ]    
+  },
+  "meetingminutes": {
+    "assignees": [
+      "id"
+    ],
+    "attachments": [
+      "id"
+    ],
+    "items": [
+      "id"
+    ],
+    "meetings": [
+      "id"
+    ],
+    "non_member_participants": [
+      "id"
+    ],
+    "participants": [
+      "id"
+    ],
+    "topics": [
+      "id"
+    ]
+  },
+  "packages": {
+    "package_associations": [
+      "id"
+    ],
+    "package_roles": [
+      "id"
+    ],
+    "packages": [
+      "id"
+    ]
+  },
+  "photos": {
+    "photo_tags": [
+      "id"
+    ],
+    "photos": [
+      "id"
+    ],
+    "referencer_participants": [
+      "id"
+    ],
+    "referencer_photos": [
+      "id"
+    ]
+  },
+  "relationships": {
+    "entity_relationship": [
+      "relationship_guid"
+    ]
+  },
+  "reviews": {
+    "review_candidates": [
+      "instance_id",
+      "step_id"
+    ],
+    "review_comments": [
+      "id"
+    ],
+    "review_documents": [
+      "id"
+    ],
+    "review_steps": [
+      "id",
+      "step_id"
+    ],
+    "review_tasks": [
+      "id"
+    ],
+    "review_workflow_templates": [
+      "id"
+    ],
+    "review_workflows": [
+      "id"
+    ],
+    "reviews": [
+      "id"
+    ],
+    "workflow_notes": [
+      "id"
+    ]
+  },
+  "rfis": {
+    "acc_attachments": [
+      "id"
+    ],
+    "attachments": [
+      "id"
+    ],
+    "category": [
+      "rfi_id",
+      "bim360_account_id",
+      "bim360_project_id",
+      "category_id"
+    ],
+    "comments": [
+      "id"
+    ],
+    "discipline": [
+      "rfi_id"
+    ],
+    "project_custom_attributes": [
+      "id"
+    ],
+    "project_custom_attributes_enums": [
+      "id"
+    ],
+    "rfi_assignees": [
+      "id"
+    ],
+    "rfi_custom_attributes": [
+      "id"
+    ],
+    "rfi_responses": [
+      "id"
+    ],
+    "rfi_transitions": [
+      "id"
+    ],
+    "rfi_types": [
+      "id"
+    ],
+    "rfis": [
+      "id"
+    ],
+    "rfi_co_reviewers":[
+      "rfi_id",
+      "user_id"
+    ],
+    "rfi_reviewers":[
+      "rfi_id",
+      "user_id"
+    ]
+  },
+  "schedule": {
+    "activities": [
+      "id"
+    ],
+    "activity_codes": [
+      "id"
+    ],
+    "comments": [
+      "id"
+    ],
+    "dependencies": [
+      "id"
+    ],
+    "plan_commitments": [
+      "id"
+    ],
+    "plan_handoffs": [
+      "id"
+    ],
+    "plan_plans": [
+      "id"
+    ],
+    "plan_task_comments": [
+      "id"
+    ],
+    "plan_tasks": [
+      "id"
+    ],
+    "resources": [
+      "id"
+    ],
+    "schedules": [
+      "id"
+    ]
+  },
+  "sheets": {
+    "lineages": [
+      "id"
+    ],
+    "sets": [
+      "id"
+    ],
+    "sheets": [
+      "id"
+    ],
+    "sheet_bubbles":[
+      "sheet_id"
+   ],
+   "sheet_tags":[
+    "sheet_id"
+   ],
+   "disciplines":[
+    "bim360_project_id",
+    "discipline_name"
+   ]
+  },
+  "submittals": {
+    "attachments": [
+      "id"
+    ],
+    "comments": [
+      "id"
+    ],
+    "items": [
+      "id"
+    ],
+    "packages": [
+      "id"
+    ],
+    "specs": [
+      "id"
+    ]
+  },
+  "submittalsacc": {
+    "attachments": [
+      "id"
+    ],
+    "comments": [
+      "id"
+    ],
+    "custom_identifier_settings": [
+      "id"
+    ],
+    "item_custom_attribute_value": [
+      "id"
+    ],
+    "item_revision": [
+      "id"
+    ],
+    "items": [
+      "id"
+    ],
+    "itemtype": [
+      "id"
+    ],
+    "packages": [
+      "id"
+    ],
+    "parameters_collections": [
+      "id"
+    ],
+    "specs": [
+      "id"
+    ],
+    "steps": [
+      "id"
+    ],
+    "tasks": [
+      "id"
+    ]
+  },
+  "takeoff": {
+    "carbon_definitions": [
+      "id"
+    ],
+    "classification_systems": [
+      "id"
+    ],
+    "classifications": [
+      "id"
+    ],
+    "content_lineages": [
+      "id"
+    ],
+    "packages": [
+      "id"
+    ],
+    "quantities": [
+      "id"
+    ],
+    "quantity_definitions": [
+      "id"
+    ],
+    "settings": [
+      "id"
+    ],
+    "takeoff_items": [
+      "id"
+    ],
+    "takeoff_types": [
+      "id"
+    ]
+  },
+  "transmittals": {
+    "transmittal_documents": [
+      "id"
+    ],
+    "transmittal_non_members": [
+      "id"
+    ],
+    "transmittal_recipients": [
+      "id"
+    ],
+    "workflow_transmittals": [
+      "id"
+    ]
+  },
+  "cdcadmin": {
+    "business_units": [
+      "id"
+    ],
+    "companies": [
+      "id"
+    ],
+    "projects": [
+      "id"
+    ],
+    "roles": [
+      "id"
+    ],
+    "users": [
+      "id"
+    ],
+    "account_services":[
+      "bim360_account_id",
+      "service"
+    ], 
+    "project_user_roles":[
+      "project_id",
+      "user_id",
+      "role_id"
+    ], 
+    "project_users":[
+      "bim360_project_id",
+      "user_id"
+    ],
+    "project_products":[
+      "bim360_project_id",
+      "product_key"
+    ],
+    "project_user_products":[
+     "bim360_project_id",
+     "user_id",
+     "product_key"
+    ],
+    "project_roles":[
+      "bim360_project_id",
+      "role_id"
+    ],
+    "project_user_companies":[
+      "project_id",
+      "user_id",
+      "company_oxygen_id"
+    ],
+    "project_companies":[
+      "project_id",
+      "company_id"
+    ],
+    "project_services":[
+      "project_id",
+      "service"
+    ],
+    "accounts":[
+      "bim360_account_id"
+    ]
+  },
+  "cdccost": {
+    "approval_workflows": [
+      "id"
+    ],
+    "change_order_cost_items": [
+      "change_order_id",
+      "cost_item_id"
+    ],
+    "change_order_properties": [
+      "change_order_id",
+      "property_definition_id"
+    ],
+    "budget_code_segment_codes": [
+      "id"
+    ],
+    "budget_code_segments": [
+      "id"
+    ],
+    "budget_payment_items": [
+      "id"
+    ],
+    "budget_payments": [
+      "id"
+    ],
+    "budget_transfers": [
+      "id"
+    ],
+    "budgets": [
+      "id"
+    ],
+    "change_orders": [
+      "id"
+    ],
+    "contracts": [
+      "id"
+    ],
+    "cost_items": [
+      "id"
+    ],
+    "cost_payment_items": [
+      "id"
+    ],
+    "cost_payments": [
+      "id"
+    ],
+    "distribution_item_curves": [
+      "id"
+    ],
+    "distribution_items": [
+      "id"
+    ],
+    "expense_items": [
+      "id"
+    ],
+    "expenses": [
+      "id"
+    ],
+    "main_contract_items": [
+      "id"
+    ],
+    "main_contracts": [
+      "id"
+    ],
+    "payment_references": [
+      "id"
+    ],
+    "permissions": [
+      "id"
+    ],
+    "sub_distribution_items": [
+      "id"
+    ],
+    "transferences": [
+      "id"
+    ]
+  },
+  "cdciq": {
+    "company_daily_quality_risk_changes": [
+      "id"
+    ],
+    "company_daily_safety_risk_changes": [
+      "id"
+    ],
+    "cost_impact_issues": [
+      "id"
+    ],
+    "design_issues_building_components": [
+      "id"
+    ],
+    "design_issues_root_cause": [
+      "id"
+    ],
+    "inspection_risk_issues": [
+      "id"
+    ],
+    "issues_quality_categories": [
+      "id"
+    ],
+    "issues_quality_risks": [
+      "id"
+    ],
+    "issues_safety_hazard": [
+      "id"
+    ],
+    "issues_safety_observations": [
+      "id"
+    ],
+    "issues_safety_risk": [
+      "id"
+    ],
+    "project_daily_quality_risk_changes": [
+      "id"
+    ],
+    "rfis_building_components": [
+      "id"
+    ],
+    "rfis_disciplines": [
+      "id",
+      "discipline"
+    ],
+    "rfis_high_risk": [
+      "id"
+    ],
+    "rfis_root_cause": [
+      "id"
+    ]
+  },
+  "cdcmeetingminutes": {
+    "assignees": [
+      "id"
+    ],
+    "attachments": [
+      "id"
+    ],
+    "items": [
+      "id"
+    ],
+    "meetings": [
+      "id"
+    ],
+    "non_member_participants": [
+      "id"
+    ],
+    "participants": [
+      "id"
+    ],
+    "topics": [
+      "id"
+    ]
+  },
+  "cdcmarkups": {
+    "markup": [
+      "id"
+    ],
+    "placement": [
+      "id"
+    ],
+    "layer": [
+      "bim360_project_id",
+      "uid"
+    ],
+    "link":[
+      "bim360_account_id", 
+      "bim360_project_id", 
+      "uid"
+    ]    
+  },
+  "cdcrelationships": {
+    "entity_relationship": [
+      "relationship_guid"
+    ]
+  },
+  "cdcrfis": {
+    "acc_attachments": [
+      "id"
+    ],
+    "attachments": [
+      "id"
+    ],
+    "category": [
+      "adsk_row_id"
+    ],
+    "comments": [
+      "id"
+    ],
+    "discipline": [
+      "rfi_id"
+    ],
+    "project_custom_attributes": [
+      "id"
+    ],
+    "project_custom_attributes_enums": [
+      "id"
+    ],
+    "rfi_assignees": [
+      "id"
+    ],
+    "rfi_custom_attributes": [
+      "id"
+    ],
+    "rfi_responses": [
+      "id"
+    ],
+    "rfi_transitions": [
+      "id"
+    ],
+    "rfi_types": [
+      "id"
+    ],
+    "rfis": [
+      "id"
+    ],
+    "rfi_co_reviewers":[
+      "rfi_id",
+      "user_id"
+    ],
+    "rfi_reviewers":[
+      "rfi_id",
+      "user_id"
+    ],
+    "rfi_location":[
+      "rfi_id"
+    ]
+  },
+  "cdcschedule": {
+    "activities": [
+      "id"
+    ],
+    "activity_codes": [
+      "id"
+    ],
+    "comments": [
+      "id"
+    ],
+    "dependencies": [
+      "id"
+    ],
+    "plan_commitments": [
+      "id"
+    ],
+    "plan_handoffs": [
+      "id"
+    ],
+    "plan_plans": [
+      "id"
+    ],
+    "plan_task_comments": [
+      "id"
+    ],
+    "plan_tasks": [
+      "id"
+    ],
+    "resources": [
+      "id"
+    ],
+    "schedules": [
+      "id"
+    ],
+    "plan_project_settings":[
+      "bim360_account_id",
+      "bim360_project_id"
+    ]
+  },
+  "cdcsubmittalsacc": {
+    "attachments": [
+      "id"
+    ],
+    "comments": [
+      "id"
+    ],
+    "custom_identifier_settings": [
+      "id"
+    ],
+    "item_custom_attribute_value": [
+      "id"
+    ],
+    "item_revision": [
+      "id"
+    ],
+    "items": [
+      "id"
+    ],
+    "itemtype": [
+      "id"
+    ],
+    "packages": [
+      "id"
+    ],
+    "parameters_collections": [
+      "id"
+    ],
+    "specs": [
+      "id"
+    ],
+    "steps": [
+      "id"
+    ],
+    "tasks": [
+      "id"
+    ],
+    "item_watchers":[
+      "item_id",
+      "user_id"
+    ]
+  },
+  "cdcsheets": {
+    "lineages": [
+      "id"
+    ],
+    "sets": [
+      "id"
+    ],
+    "sheets": [
+      "id"
+    ],
+    "sheet_bubbles":[
+      "sheet_id"
+   ],
+   "sheet_tags":[
+      "adsk_row_id"
+   ],
+   "disciplines":[
+    "adsk_row_id"
+   ]
+  },
+  "cdctransmittals": {
+    "transmittal_documents": [
+      "id"
+    ],
+    "transmittal_non_members": [
+      "id"
+    ],
+    "transmittal_recipients": [
+      "id"
+    ],
+    "workflow_transmittals": [
+      "id"
+    ]
+  },
+  "cdcissues": {
+    "attachments": [
+      "attachment_id"
+    ],
+    "comments": [
+      "comment_id"
+    ],
+    "custom_attributes_mappings": [
+      "id"
+    ],
+    "issue_subtypes": [
+      "issue_subtype_id"
+    ],
+    "issue_types": [
+      "issue_type_id"
+    ],
+    "issues": [
+      "issue_id"
+    ],
+    "placements": [
+      "placement_id"
+    ],
+    "root_cause_categories": [
+      "root_cause_category_id"
+    ],
+    "root_causes": [
+      "root_cause_id"
+    ],
+    "viewables":[
+      "placement_id",
+      "viewable_id"
+    ]
+  },
+  "cdclocations": {
+    "nodes": [
+      "id"
+    ],
+    "trees": [
+      "id"
+    ]
+  },
+  "classifications": {
+    "structures_account": [
+      "structure_id"
+    ],
+    "structures_project": [
+      "structure_id"
+    ],
+    "nodes_account": [
+      "structure_id",
+      "node_id"
+    ],
+    "nodes_project": [
+      "structure_id",
+      "node_id"
+    ],
+    "nodes_library_used_in_project": [
+      "structure_id",
+      "node_id"
+    ]
+  }
+}
