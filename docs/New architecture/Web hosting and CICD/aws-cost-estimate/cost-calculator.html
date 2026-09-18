@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACC → Databricks on AWS — Hosting Cost Calculator (us-east-2)</title>
+<style>
+  :root{
+    --bg:#0f172a;--panel:#1e293b;--panel2:#273449;--ink:#e2e8f0;--mut:#94a3b8;
+    --acc:#38bdf8;--good:#34d399;--warn:#fbbf24;--line:#334155;--chip:#0ea5e9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+  header{padding:22px 28px;background:linear-gradient(90deg,#0c4a6e,#0f172a);border-bottom:1px solid var(--line)}
+  header h1{margin:0;font-size:20px}
+  header p{margin:6px 0 0;color:var(--mut);font-size:13px}
+  .wrap{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px 28px;align-items:start}
+  @media(max-width:980px){.wrap{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+  .card h2{margin:0 0 12px;font-size:14px;letter-spacing:.4px;text-transform:uppercase;color:var(--acc)}
+  label{display:block;font-size:12px;color:var(--mut);margin:10px 0 3px}
+  input[type=number],select{width:100%;padding:8px 10px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:8px;color:var(--ink);font-size:14px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .presets button,.modelbtns button{flex:1;min-width:90px;padding:9px 6px;border:1px solid var(--line);border-radius:8px;
+    background:var(--panel2);color:var(--ink);cursor:pointer;font-size:12px}
+  .presets button:hover,.modelbtns button:hover{border-color:var(--acc)}
+  .modelbtns{display:flex;gap:8px;margin-bottom:8px}
+  .modelbtns button.active{background:var(--chip);border-color:var(--chip);color:#04243a;font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.sub td{color:var(--mut);font-size:12px}
+  .tot td{font-weight:800;font-size:15px;border-top:2px solid var(--acc);border-bottom:none}
+  .big{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .kpi{flex:1;min-width:150px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .kpi .v{font-size:24px;font-weight:800;color:var(--good)}
+  .kpi .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+  .pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#0c4a6e;color:var(--acc);margin-left:6px}
+  .note{font-size:11px;color:var(--mut);margin-top:8px}
+  .rate{font-size:11px;color:var(--mut)}
+  details{margin-top:10px}
+  summary{cursor:pointer;color:var(--acc);font-size:12px}
+  .grp{margin:8px 0 2px;font-size:11px;text-transform:uppercase;color:var(--warn);letter-spacing:.5px}
+  footer{padding:14px 28px;color:var(--mut);font-size:11px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <h1>ACC → AWS S3 → Databricks Bronze — Monthly Hosting Cost Calculator</h1>
+  <p>Region: <b>US East (Ohio) us-east-2</b> · Currency: <b>USD</b> · Rates as of <b>17 Jun 2026</b> · Flask orchestrator + S3 landing + Databricks (deployed on AWS) bronze ETL</p>
+</header>
+
+<div class="wrap">
+  <!-- LEFT: INPUTS -->
+  <div>
+    <div class="card">
+      <h2>Usage scenario</h2>
+      <div class="presets">
+        <button onclick="preset('low')">Low</button>
+        <button onclick="preset('base')">Baseline</button>
+        <button onclick="preset('high')">High</button>
+      </div>
+      <div class="row">
+        <div><label>Number of users</label><input id="users" type="number" value="20"></div>
+        <div><label>Refreshes / day</label><input id="refreshday" type="number" value="2"></div>
+      </div>
+      <div class="row">
+        <div><label>Initial full load / user (GB)</label><input id="initgb" type="number" step="0.1" value="1.5"></div>
+        <div><label>Daily change data / user (MB)</label><input id="dailymb" type="number" value="50"></div>
+      </div>
+      <label>S3 steady-state stored data incl. Delta history (GB)</label>
+      <input id="storegb" type="number" value="80">
+      <div class="note">Data INTO AWS/S3 is free. Daily ingest = users × change-MB × refreshes.</div>
+    </div>
+
+    <div class="card">
+      <h2>Deployment model</h2>
+      <div class="modelbtns">
+        <button id="m1" onclick="setModel(1)">1 · App Runner</button>
+        <button id="m2" onclick="setModel(2)">2 · Fargate+ALB</button>
+        <button id="m3" onclick="setModel(3)">3 · EC2 lean</button>
+      </div>
+
+      <div class="grp">Flask app compute</div>
+      <div class="row">
+        <div><label>App vCPU</label><input id="vcpu" type="number" step="0.25" value="0.5"></div>
+        <div><label>App memory (GB)</label><input id="mem" type="number" step="0.5" value="1"></div>
+      </div>
+      <label>App active hours / month (730 = always on)</label>
+      <input id="apphrs" type="number" value="730">
+
+      <div class="grp">Databricks ETL</div>
+      <label>Compute type</label>
+      <select id="dbtype">
+        <option value="jobs">Classic Jobs Compute ($0.15/DBU + EC2)</option>
+        <option value="serverless">Serverless Jobs ($0.70/DBU, no EC2)</option>
+        <option value="allpurpose">All-Purpose ($0.55/DBU + EC2)</option>
+      </select>
+      <div class="row">
+        <div><label>Cluster DBU / hour</label><input id="dburate" type="number" step="0.5" value="3"></div>
+        <div><label>Minutes / run</label><input id="runmin" type="number" value="25"></div>
+      </div>
+      <label>Underlying EC2 $/hr (classic clusters only)</label>
+      <input id="ec2hr" type="number" step="0.01" value="0.34">
+
+      <div class="grp">Networking & extras</div>
+      <div class="row">
+        <div><label>NAT Gateway?</label><select id="nat"><option value="1">Yes</option><option value="0">No</option></select></div>
+        <div><label>App Load Balancer?</label><select id="alb"><option value="1">Yes</option><option value="0">No</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>RDS metadata DB?</label><select id="rds"><option value="0">No</option><option value="1">Yes (t4g.micro)</option></select></div>
+        <div><label>Extra EC2 $/mo (host)</label><input id="hostec2" type="number" step="0.01" value="0"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Rate sheet (editable) <span class="pill">us-east-2</span></h2>
+      <details><summary>Show / edit unit prices</summary>
+        <div class="row">
+          <div><label>S3 $/GB-mo</label><input id="r_s3" type="number" step="0.001" value="0.023"></div>
+          <div><label>S3 req $/1k (blended)</label><input id="r_req" type="number" step="0.001" value="0.005"></div>
+        </div>
+        <div class="row">
+          <div><label>Fargate $/vCPU-hr</label><input id="r_fcpu" type="number" step="0.0001" value="0.04048"></div>
+          <div><label>Fargate $/GB-hr</label><input id="r_fmem" type="number" step="0.0001" value="0.004445"></div>
+        </div>
+        <div class="row">
+          <div><label>AppRunner $/vCPU-hr</label><input id="r_arcpu" type="number" step="0.001" value="0.064"></div>
+          <div><label>AppRunner $/GB-hr</label><input id="r_armem" type="number" step="0.001" value="0.007"></div>
+        </div>
+        <div class="row">
+          <div><label>NAT $/hr</label><input id="r_nathr" type="number" step="0.001" value="0.045"></div>
+          <div><label>NAT $/GB</label><input id="r_natgb" type="number" step="0.001" value="0.045"></div>
+        </div>
+        <div class="row">
+          <div><label>ALB $/hr</label><input id="r_albhr" type="number" step="0.0001" value="0.0225"></div>
+          <div><label>ALB $/LCU-hr</label><input id="r_lcu" type="number" step="0.001" value="0.008"></div>
+        </div>
+        <div class="row">
+          <div><label>Egress $/GB (after 100GB free)</label><input id="r_egress" type="number" step="0.001" value="0.09"></div>
+          <div><label>RDS $/mo (inst+stg)</label><input id="r_rds" type="number" step="0.1" value="14"></div>
+        </div>
+        <div class="row">
+          <div><label>DBU $ (jobs)</label><input id="r_dbujobs" type="number" step="0.01" value="0.15"></div>
+          <div><label>DBU $ (serverless)</label><input id="r_dbusrv" type="number" step="0.01" value="0.70"></div>
+        </div>
+        <div class="row">
+          <div><label>DBU $ (all-purpose)</label><input id="r_dbuall" type="number" step="0.01" value="0.55"></div>
+          <div><label>Secrets+Logs $/mo</label><input id="r_misc" type="number" step="0.1" value="4"></div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- RIGHT: RESULTS -->
+  <div>
+    <div class="card">
+      <h2>Estimated cost</h2>
+      <div class="big">
+        <div class="kpi"><div class="l">AWS infra / month</div><div class="v" id="kAws">$0</div></div>
+        <div class="kpi"><div class="l">Databricks DBU / month</div><div class="v" id="kDbu">$0</div></div>
+        <div class="kpi"><div class="l">Total / month</div><div class="v" id="kTot">$0</div></div>
+        <div class="kpi"><div class="l">Total / year</div><div class="v" id="kYr">$0</div></div>
+      </div>
+      <table id="tbl">
+        <thead><tr><th>Component</th><th>Basis</th><th class="num">$/mo</th></tr></thead>
+        <tbody id="rows"></tbody>
+        <tfoot>
+          <tr class="tot"><td>Total monthly</td><td></td><td class="num" id="fTot">$0</td></tr>
+        </tfoot>
+      </table>
+      <div class="note" id="ingestNote"></div>
+    </div>
+
+    <div class="card">
+      <h2>One-time / first month extras</h2>
+      <table>
+        <tbody id="onetime"></tbody>
+      </table>
+      <div class="note">Initial full load is a one-time ingest (free into S3) plus a longer first Databricks run. Heavy initial backfill may add a few extra DBU-hours that month.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Estimator only — actual AWS/Databricks invoices depend on exact instance types, request counts, committed-use discounts, and Databricks tier (Premium assumed).
+  Data transfer INTO AWS is free; egress to the internet is free for the first 100 GB/mo then $0.09/GB. us-east-2 list prices ≈ us-east-1 for all services modeled here.
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($(id).value) || 0;
+const HRS = 730;
+const fmt = n => '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+const PRESETS = {
+  low:  {users:5,  initgb:0.5, dailymb:10, storegb:20,  runmin:12, dburate:2},
+  base: {users:20, initgb:1.5, dailymb:50, storegb:80,  runmin:25, dburate:3},
+  high: {users:20, initgb:3,   dailymb:200,storegb:250, runmin:45, dburate:5}
+};
+function preset(p){const v=PRESETS[p];for(const k in v)$(k).value=v[k];calc();}
+
+const MODELS = {
+  1:{vcpu:1,mem:2,apphrs:730,dbtype:'serverless',nat:'0',alb:'0',rds:'0',hostec2:0},
+  2:{vcpu:0.5,mem:1,apphrs:730,dbtype:'jobs',nat:'1',alb:'1',rds:'0',hostec2:0},
+  3:{vcpu:0,mem:0,apphrs:0,dbtype:'jobs',nat:'0',alb:'0',rds:'0',hostec2:12.26}
+};
+let model = 3;
+function setModel(m){
+  model=m;['m1','m2','m3'].forEach(x=>$(x).classList.remove('active'));$('m'+m).classList.add('active');
+  const v=MODELS[m];for(const k in v)$(k).value=v[k];calc();
+}
+
+function addRow(rows,name,basis,val,sub){
+  const tr=document.createElement('tr');if(sub)tr.className='sub';
+  tr.innerHTML=`<td>${name}</td><td class="rate">${basis}</td><td class="num">${fmt(val)}</td>`;
+  rows.appendChild(tr);
+}
+
+function calc(){
+  const rows=$('rows');rows.innerHTML='';
+  const users=num('users'), refr=num('refreshday'), dailymb=num('dailymb'), storegb=num('storegb');
+  // ---- App compute ----
+  const vcpu=num('vcpu'), mem=num('mem'), apphrs=num('apphrs');
+  let appCost=0, appBasis='';
+  if(model===1){ // App Runner
+    appCost = vcpu*num('r_arcpu')*apphrs + mem*num('r_armem')*HRS;
+    appBasis=`App Runner ${vcpu}vCPU/${mem}GB`;
+  } else if(model===2){ // Fargate
+    appCost = (vcpu*num('r_fcpu') + mem*num('r_fmem'))*apphrs;
+    appBasis=`Fargate ${vcpu}vCPU/${mem}GB × ${apphrs}h`;
+  } else { // EC2 host
+    appCost = num('hostec2');
+    appBasis=`EC2 host (t4g.small) flat`;
+  }
+  if(appCost>0) addRow(rows,'Flask app compute',appBasis,appCost);
+  if(model!==3 && num('hostec2')>0) addRow(rows,'Extra EC2 host','flat',num('hostec2'));
+
+  // ---- Load balancer ----
+  let albCost=0;
+  if($('alb').value==='1'){ albCost = num('r_albhr')*HRS + num('r_lcu')*1*HRS; addRow(rows,'Application Load Balancer',`$/hr + ~1 LCU`,albCost); }
+
+  // ---- NAT ----
+  const dailyIngestGB = users*dailymb/1024*refr; // through NAT, inbound
+  const monthIngestGB = dailyIngestGB*30;
+  let natCost=0;
+  if($('nat').value==='1'){ natCost = num('r_nathr')*HRS + monthIngestGB*num('r_natgb'); addRow(rows,'NAT Gateway',`$/hr + ${monthIngestGB.toFixed(1)}GB`,natCost); }
+
+  // ---- S3 ----
+  const s3store = storegb*num('r_s3');
+  // request estimate: assume 5000 objects per run write + reads
+  const runsMonth = refr*30;
+  const s3reqK = (runsMonth*5000*2)/1000; // PUT+GET in thousands
+  const s3req = s3reqK*num('r_req')/1; // blended per 1k (rough)
+  addRow(rows,'S3 storage',`${storegb}GB × $${num('r_s3')}`,s3store);
+  addRow(rows,'S3 requests',`~${runsMonth} runs ingest/read`,s3req);
+
+  // ---- Egress ----
+  const egressGB = Math.max(0, users*0.05*30 - 100); // tiny API responses, mostly within free tier
+  const egress = egressGB*num('r_egress');
+  if(egress>0) addRow(rows,'Internet egress',`${egressGB.toFixed(0)}GB after free`,egress);
+
+  // ---- RDS ----
+  let rdsCost=0;
+  if($('rds').value==='1'){ rdsCost=num('r_rds'); addRow(rows,'RDS PostgreSQL','t4g.micro + 20GB',rdsCost); }
+
+  // ---- Misc (secrets, logs) ----
+  const misc=num('r_misc'); addRow(rows,'Secrets Mgr + CloudWatch','flat',misc);
+
+  // ---- Databricks ----
+  const dbtype=$('dbtype').value;
+  const dburate=num('dburate'), runmin=num('runmin');
+  const clusterHrs = runmin/60*refr*30; // cluster-hours/month
+  const dbuMonth = dburate*clusterHrs;
+  let dbuPrice = dbtype==='serverless'?num('r_dbusrv'):dbtype==='allpurpose'?num('r_dbuall'):num('r_dbujobs');
+  const dbuCost = dbuMonth*dbuPrice;
+  let dbEc2=0;
+  if(dbtype!=='serverless'){ dbEc2 = num('ec2hr')*clusterHrs; addRow(rows,'Databricks cluster EC2',`${clusterHrs.toFixed(1)} cluster-hrs`,dbEc2); }
+
+  // ---- Totals ----
+  let awsInfra = appCost + albCost + natCost + s3store + s3req + egress + rdsCost + misc + dbEc2;
+  if(model!==3 && num('hostec2')>0) awsInfra += num('hostec2');
+  const total = awsInfra + dbuCost;
+
+  // Databricks DBU shown separately at bottom
+  addRow(rows,'Databricks DBU',`${dbuMonth.toFixed(1)} DBU × $${dbuPrice}`,dbuCost);
+
+  $('kAws').textContent=fmt(awsInfra);
+  $('kDbu').textContent=fmt(dbuCost);
+  $('kTot').textContent=fmt(total);
+  $('kYr').textContent=fmt(total*12);
+  $('fTot').textContent=fmt(total);
+  $('ingestNote').textContent=`Daily ingest ≈ ${dailyIngestGB.toFixed(2)} GB/day (${monthIngestGB.toFixed(0)} GB/mo) · Databricks cluster runs ≈ ${clusterHrs.toFixed(1)} hrs/mo`;
+
+  // one-time
+  const ot=$('onetime');ot.innerHTML='';
+  const initGB=users*num('initgb');
+  addRow(ot,'Initial full load ingest',`${initGB.toFixed(0)} GB into S3`,0);
+  addRow(ot,'First-run backfill DBU','~3× a normal run',dbuPrice*dburate*(runmin/60)*3);
+}
+
+['users','refreshday','initgb','dailymb','storegb','vcpu','mem','apphrs','dbtype','dburate','runmin','ec2hr',
+ 'nat','alb','rds','hostec2','r_s3','r_req','r_fcpu','r_fmem','r_arcpu','r_armem','r_nathr','r_natgb','r_albhr',
+ 'r_lcu','r_egress','r_rds','r_dbujobs','r_dbusrv','r_dbuall','r_misc']
+ .forEach(id=>$(id).addEventListener('input',calc));
+
+setModel(3); // default to lean, then user can switch
+</script>
+</body>
+</html>

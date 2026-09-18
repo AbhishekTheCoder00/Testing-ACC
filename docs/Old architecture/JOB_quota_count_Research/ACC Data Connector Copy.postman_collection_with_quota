@@ -1,0 +1,858 @@
+{
+  "info": {
+    "_postman_id": "1000d3ed-5e3b-4ee8-a324-fe8ebae4304d",
+    "name": "ACC Data Connector Copy",
+    "description": "All 6 steps of the ACC Data Connector API flow.\n\nSetup:\n1. Start the Flask app (start.bat) and sign in at http://localhost:8000\n2. Run the [Helper] request, copy bearer_token / account_id / project_id into the Variables tab\n3. Run requests 1 to 6 in order",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55513820",
+    "_collection_link": "https://go.postman.co/collection/55513820-1000d3ed-5e3b-4ee8-a324-fe8ebae4304d?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "[Helper] Get token + config from Flask app",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/debug/acc",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8000",
+          "path": [
+            "debug",
+            "acc"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1 - Create export request",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json.id) {",
+              "    pm.collectionVariables.set('REQUEST_ID', json.id);",
+              "    console.log('REQUEST_ID set:', json.id);",
+              "}"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "region",
+            "value": "US"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projectId\": \"{{PROJECT_ID}}\",\n  \"description\": \"Postman test export\",\n  \"isActive\": true,\n  \"scheduleInterval\": \"ONE_TIME\",\n  \"effectiveFrom\": \"{{$isoTimestamp}}\",\n  \"serviceGroups\": [\n    \"admin\", \"assets\", \"checklists\", \"clashes\", \"iq\", \"cost\",\n    \"dailylogs\", \"estimates\", \"forms\", \"issues\", \"issuesbim360\",\n    \"locations\", \"markups\", \"meetingminutes\", \"packages\", \"photos\",\n    \"relationships\", \"reviews\", \"rfis\", \"schedule\", \"sheets\",\n    \"submittals\", \"submittalsacc\", \"takeoff\", \"transmittals\"\n  ],\n  \"sendEmail\": false\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://developer.api.autodesk.com/data-connector/v1/accounts/{{ACCOUNT_ID}}/requests",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "data-connector",
+            "v1",
+            "accounts",
+            "{{ACCOUNT_ID}}",
+            "requests"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2 - Poll: wait for job to appear",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "var results = json.results || [];",
+              "if (results.length > 0) {",
+              "    pm.collectionVariables.set('JOB_ID', results[0].id);",
+              "    console.log('JOB_ID set:', results[0].id);",
+              "} else {",
+              "    console.log('No job yet - wait 10s and resend');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          },
+          {
+            "key": "region",
+            "value": "US"
+          }
+        ],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/data-connector/v1/accounts/{{ACCOUNT_ID}}/requests/{{REQUEST_ID}}/jobs",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "data-connector",
+            "v1",
+            "accounts",
+            "{{ACCOUNT_ID}}",
+            "requests",
+            "{{REQUEST_ID}}",
+            "jobs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3 - Poll: job status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          },
+          {
+            "key": "region",
+            "value": "US"
+          }
+        ],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/data-connector/v1/accounts/{{ACCOUNT_ID}}/jobs/{{JOB_ID}}",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "data-connector",
+            "v1",
+            "accounts",
+            "{{ACCOUNT_ID}}",
+            "jobs",
+            "{{JOB_ID}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4 - List exported files",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          },
+          {
+            "key": "region",
+            "value": "US"
+          }
+        ],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/data-connector/v1/accounts/{{ACCOUNT_ID}}/jobs/{{JOB_ID}}/data-listing",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "data-connector",
+            "v1",
+            "accounts",
+            "{{ACCOUNT_ID}}",
+            "jobs",
+            "{{JOB_ID}}",
+            "data-listing"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5 - Get signed URL for a file",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{TOKEN}}"
+          },
+          {
+            "key": "region",
+            "value": "US"
+          }
+        ],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/data-connector/v1/accounts/{{ACCOUNT_ID}}/jobs/{{JOB_ID}}/data/{{FILE_NAME}}",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "data-connector",
+            "v1",
+            "accounts",
+            "{{ACCOUNT_ID}}",
+            "jobs",
+            "{{JOB_ID}}",
+            "data",
+            "{{FILE_NAME}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6 - Download file (no auth needed)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        },
+        "description": "Replace the URL with the signedUrl value from the step 5 response. No Authorization header needed."
+      },
+      "response": []
+    },
+    {
+      "name": "job count on account",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "single job status",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Latest jobs first result set desc",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Latest jobs using sortFields",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Latest 30 jobs",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "Jobs from the last 24 hours",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "accounts/{accountId}/requests/{requestId}/jobs",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "accounts/{accountId}/jobs",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Parse the response JSON\r",
+              "const apiResponse = pm.response.json();\r",
+              "\r",
+              "// Current time\r",
+              "const now = new Date();\r",
+              "\r",
+              "// Rolling 24-hour window\r",
+              "const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));\r",
+              "\r",
+              "// Filter jobs created within the last 24 hours\r",
+              "const jobsInLast24Hours = apiResponse.results.filter(job => {\r",
+              "    const createdAt = new Date(job.createdAt);\r",
+              "    return createdAt >= twentyFourHoursAgo;\r",
+              "});\r",
+              "\r",
+              "// Count jobs\r",
+              "const activeHubJobCount = jobsInLast24Hours.length;\r",
+              "\r",
+              "// Remaining quota\r",
+              "const remainingJobsAllowed = Math.max(0, 24 - activeHubJobCount);\r",
+              "\r",
+              "// Print results\r",
+              "console.log(\"Jobs in last 24 hours:\", activeHubJobCount);\r",
+              "console.log(\"Remaining jobs:\", remainingJobsAllowed);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/data-connector/v1/accounts/:accountId/jobs?limit=100",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "data-connector",
+            "v1",
+            "accounts",
+            ":accountId",
+            "jobs"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "100"
+            }
+          ],
+          "variable": [
+            {
+              "key": "accountId",
+              "value": "a50dcb76-5328-4d9e-9898-3795ad0d1015"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "accounts/{accountId}/jobs Copy",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const response = pm.response.json();\r",
+              " \r",
+              "// ============================================================\r",
+              "// ADD YOUR USER EMAIL IDs HERE\r",
+              "// ============================================================\r",
+              "const userFilter = [\r",
+              "    \"gajendra.tandekar@cctech.co.in\",\r",
+              "    \"abhishek.suryawanshi@autodesk.com\"\r",
+              "];\r",
+              "// ============================================================\r",
+              " \r",
+              "const now = new Date();\r",
+              "const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000);\r",
+              " \r",
+              "function toIST(date) {\r",
+              "    return date.toLocaleString(\"en-IN\", {\r",
+              "        timeZone: \"Asia/Kolkata\",\r",
+              "        year: \"numeric\",\r",
+              "        month: \"2-digit\",\r",
+              "        day: \"2-digit\",\r",
+              "        hour: \"2-digit\",\r",
+              "        minute: \"2-digit\",\r",
+              "        second: \"2-digit\",\r",
+              "        hour12: false\r",
+              "    });\r",
+              "}\r",
+              " \r",
+              "console.log(\"Current IST :\", toIST(now));\r",
+              "console.log(\"Cutoff IST  :\", toIST(cutoff));\r",
+              "console.log(\"================================\");\r",
+              " \r",
+              "// Initialize map for all users in the filter list\r",
+              "const userJobMap = {};\r",
+              "userFilter.forEach(email => {\r",
+              "    userJobMap[email.toLowerCase()] = { count: 0, userId: \"N/A\", originalEmail: email };\r",
+              "});\r",
+              " \r",
+              "let totalCount = 0;\r",
+              " \r",
+              "response.results.forEach(job => {\r",
+              "    const created = new Date(job.createdAt);\r",
+              "    const email = (job.createdByEmail || \"\").toLowerCase();\r",
+              "    const userId = job.createdBy || \"unknown\";\r",
+              " \r",
+              "    if (created >= cutoff) {\r",
+              "        if (userJobMap[email] !== undefined) {\r",
+              "            totalCount++;\r",
+              "            userJobMap[email].count++;\r",
+              "            userJobMap[email].userId = userId;\r",
+              "            console.log(`Included | Job ID: ${job.id} | User: ${email} | Created: ${toIST(created)}`);\r",
+              "        }\r",
+              "    }\r",
+              "});\r",
+              " \r",
+              "console.log(\"================================\");\r",
+              "console.log(\"--- Jobs per User (last 24 hrs) ---\");\r",
+              " \r",
+              "userFilter.forEach(email => {\r",
+              "    const info = userJobMap[email.toLowerCase()];\r",
+              "    console.log(`User: ${info.originalEmail} | User ID: ${info.userId} | Jobs: ${info.count} | Remaining Quota: ${Math.max(0, 24 - info.count)}`);\r",
+              "});\r",
+              " \r",
+              "console.log(\"--------------------------------\");\r",
+              "console.log(\"Total Users tracked:\", userFilter.length);\r",
+              "console.log(\"Total Jobs in last 24 hours:\", totalCount);\r",
+              "console.log(\"Current IST:\", toIST(now));\r",
+              "console.log(\"Cutoff IST :\", toIST(cutoff));\r",
+              " \r",
+              "pm.collectionVariables.set(\"jobSummary_totalJobs\", totalCount);\r",
+              "pm.collectionVariables.set(\"jobSummary_totalUsers\", userFilter.length);\r",
+              "pm.collectionVariables.set(\"jobSummary_perUser\", JSON.stringify(userJobMap));"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/data-connector/v1/accounts/:accountId/requests?limit=100",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "data-connector",
+            "v1",
+            "accounts",
+            ":accountId",
+            "requests"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "100"
+            }
+          ],
+          "variable": [
+            {
+              "key": "accountId",
+              "value": "a50dcb76-5328-4d9e-9898-3795ad0d1015"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "hub",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "v2/features",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "hubs/{hubId}/usage/daily-totals",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/applications/v2/hubs/{{hubId}}/usage/daily-totals",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "applications",
+            "v2",
+            "hubs",
+            "{{hubId}}",
+            "usage",
+            "daily-totals"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "clients/{id}/usage/daily-totals",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "job count quota",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "hub Copy",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "hub project",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "user info",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "internal api",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/applications/v2/hubs/{{hubId}}/usage/daily-totals",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "applications",
+            "v2",
+            "hubs",
+            "{{hubId}}",
+            "usage",
+            "daily-totals"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "hubs/{hubId}/usage/daily-totals",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://developer.api.autodesk.com/applications/v2/features",
+          "protocol": "https",
+          "host": [
+            "developer",
+            "api",
+            "autodesk",
+            "com"
+          ],
+          "path": [
+            "applications",
+            "v2",
+            "features"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "ACCOUNT_ID",
+      "value": "",
+      "description": "Paste account_id from /debug/acc"
+    },
+    {
+      "key": "PROJECT_ID",
+      "value": "",
+      "description": "Paste project_id from /debug/acc"
+    },
+    {
+      "key": "TOKEN",
+      "secret": true
+    },
+    {
+      "key": "REQUEST_ID",
+      "value": "",
+      "description": "Auto-filled by step 1 test script"
+    },
+    {
+      "key": "JOB_ID",
+      "value": "",
+      "description": "Auto-filled by step 2 test script"
+    },
+    {
+      "key": "FILE_NAME",
+      "value": "admin_users.csv",
+      "description": "Pick any filename from step 4 response"
+    },
+    {
+      "key": "supabase_service_role_api_key_0ogw",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_00sk",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_00sk",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_06y1",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_0zdj",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_13su",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_0kxu",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_0whd",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_14yw",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_08h7",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_1e33",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_0aop",
+      "secret": true
+    },
+    {
+      "key": "supabase_service_role_api_key_0aop",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_19mz",
+      "secret": true
+    },
+    {
+      "key": "jobSummary_totalJobs",
+      "value": ""
+    },
+    {
+      "key": "jobSummary_totalUsers",
+      "value": ""
+    },
+    {
+      "key": "jobSummary_perUser",
+      "value": ""
+    },
+    {
+      "key": "auth_secret_03rb",
+      "secret": true
+    },
+    {
+      "key": "auth_secret_05o8",
+      "secret": true
+    }
+  ]
+}
