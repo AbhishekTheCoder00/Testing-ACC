@@ -1,0 +1,33 @@
+# Secrets — never commit
+.env
+
+# M2M SSA private keys — never commit. The secrets/ dir is tracked via
+# .gitkeep but its key material (PEM) stays local.
+secrets/*
+!secrets/.gitkeep
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Azure deploy artifacts
+.deployment
+
+connector.db
